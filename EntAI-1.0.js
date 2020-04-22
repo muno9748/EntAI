@@ -104,7 +104,7 @@ function loadComplete() {
 Entry.events_.showMachineLearningScreen = Entry.events_.showVideoLoadingScreen
 Entry.events_.showMachineLearningScreen[1] = () => {$('.description__d9e8f').html('머신러닝에 필요한 도구들을 로드중입니다.<br />몇 초만 기다려 주세요.')}
 Entry.dispatchEvent('showMachineLearningScreen');
-const mobileNetModel;
+let mobileNetModel;
 if(typeof mobilenet == 'undefined' || typeof tf == 'undefined') {
     try {
         $.getScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1" , () => {
