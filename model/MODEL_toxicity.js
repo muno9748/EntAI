@@ -13,7 +13,7 @@
         try {
             if(Entry.variableContainer.getListByName('EntAI-욕설체크')) {
                 if (_.find(Entry.variableContainer.messages_, d => d.name == '욕설체크완료')) {
-                    var resultData = (await (async () => {return returnvalue = {},(await toxicityModel.classify([script.getValue('OBJECT',script)])).map(el => {
+                    var resultData = (await (async () => {return returnvalue = {},(await toxicityModel.classify([script.getStringValue('OBJECT',script)])).map(el => {
                         const filter = {
                             identity_attack: '정체성 공격',
                             insult: '모욕',
