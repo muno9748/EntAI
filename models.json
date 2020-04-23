@@ -14,7 +14,7 @@
         "modelScriptUrls": "https://cdn.jsdelivr.net/npm/@tensorflow-models/toxicity"
     },
     "knn": {
-        "include": 'mobilenet'
+        "include": "mobilenet",
         "modelname": "knn",
         "name": "이미지학습",
         "modelParams": 0.9,
