@@ -1,7 +1,14 @@
 function loadComplete() {
     Entry.dispatchEvent('hideLoadingScreen');
-    const blockId = _.find(Entry.variableContainer.functions_,
-        d => d.block.template.replace(/ /gi,'') == '%1의이미지감지%2').id;
+    var blockidTemp = _.find(Entry.variableContainer.functions_,
+        d => d.block.template.replace(/ /gi,'') == '%1의이미지감지%2');
+    if(!blockidTemp) {
+        Entry.toast.alert('EntAI 오류','"(문자/숫자값)의 이미지 감지" 함수가 필요합니다.');
+        Entry.engine.toggleStop();
+        return;
+    }
+    const blockId = blockidTemp.id;
+
     Entry.block[`func_${blockId}`].paramsKeyMap = { OBJECT: 0 };
     Entry.block[`func_${blockId}`].func = (sprite, script) => {
         console.log(sprite.picture);
@@ -36,19 +43,24 @@ function loadComplete() {
                     console.log('Predictions: ');
                     console.table(predictions);
                     if(_.find(Entry.variableContainer.messages_, d => d.name == '감지완료')) {
-                        if(_.find(Entry.expansion.playground.dataTable.tables, d => d.name == '이미지데이터')) {
-                            var table = Entry.expansion.playground.dataTable.getSource(_.find(Entry.expansion.playground.dataTable.tables, d => d.name == '이미지데이터').id);
-                            table.rows.forEach(() => {
-                                table.deleteRow(1);
+                        if(!Entry.variableContainer.getListByName('EntAI-정확도') || !Entry.variableContainer.getListByName('"EntAI-데이터')) {
+                            const list = {
+                                className: Entry.variableContainer.getListByName('EntAI-데이터'),
+                                probability: Entry.variableContainer.getListByName('EntAI-정확도')
+                            };
+                            list.className.getArray().forEach(() => {
+                                list.className.deleteValue(1);
                             });
-                            predictions.forEach((el,i) => {
-                                table.appendRow();
-                                table.replaceValue([i + 1, 1],el.className);
-                                table.replaceValue([i + 1, 2],String(el.probability * 100).substr(0,String(el.probability * 100).indexOf('.') + 3));
+                            list.probability.getArray().forEach(() => {
+                                list.probability.deleteValue(1);
+                            });
+                            predictions.forEach(el => {
+                                list.className.appendValue(el.className);
+                                list.probability.appendValue((String(el.probability * 100).substr(0,String(el.probability * 100).indexOf('.') + 3)) + "%");
                             });
                             Entry.engine.raiseMessage(_.find(Entry.variableContainer.messages_, d => d.name == '감지완료').id);
                         } else {
-                            Entry.toast.alert('EntAI 오류','"이미지데이터" 테이블이 필요합니다.');
+                            Entry.toast.alert('EntAI 오류','"EntAI-정확도"와 "EntAI-데이터" 리스트가 필요합니다.');
                             Entry.engine.toggleStop();
                             return;
                         }
@@ -66,19 +78,24 @@ function loadComplete() {
                     console.log('Predictions: ');
                     console.table(predictions);
                     if(_.find(Entry.variableContainer.messages_, d => d.name == '감지완료')) {
-                        if(_.find(Entry.expansion.playground.dataTable.tables, d => d.name == '이미지데이터')) {
-                            var table = Entry.expansion.playground.dataTable.getSource(_.find(Entry.expansion.playground.dataTable.tables, d => d.name == '이미지데이터').id);
-                            table.rows.forEach(() => {
-                                table.deleteRow(1);
+                        if(!Entry.variableContainer.getListByName('EntAI-정확도') || !Entry.variableContainer.getListByName('"EntAI-데이터')) {
+                            const list = {
+                                className: Entry.variableContainer.getListByName('EntAI-데이터'),
+                                probability: Entry.variableContainer.getListByName('EntAI-정확도')
+                            };
+                            list.className.getArray().forEach(() => {
+                                list.className.deleteValue(1);
                             });
-                            predictions.forEach((el,i) => {
-                                table.appendRow();
-                                table.replaceValue([i + 1, 1],el.className);
-                                table.replaceValue([i + 1, 2],String(el.probability * 100).substr(0,String(el.probability * 100).indexOf('.') + 3));
+                            list.probability.getArray().forEach(() => {
+                                list.probability.deleteValue(1);
+                            });
+                            predictions.forEach(el => {
+                                list.className.appendValue(el.className);
+                                list.probability.appendValue((String(el.probability * 100).substr(0,String(el.probability * 100).indexOf('.') + 3)) + "%");
                             });
                             Entry.engine.raiseMessage(_.find(Entry.variableContainer.messages_, d => d.name == '감지완료').id);
                         } else {
-                            Entry.toast.alert('EntAI 오류','"이미지데이터" 테이블이 필요합니다.');
+                            Entry.toast.alert('EntAI 오류','"EntAI-정확도"와 "EntAI-데이터" 리스트가 필요합니다.');
                             Entry.engine.toggleStop();
                             return;
                         }
