@@ -1,0 +1,16 @@
+{
+    mobilenet: {
+        modelname: 'mobilenet',
+        name: '이미지감지',
+        modelParams: null,
+        modelDatas: 'mobileNetModel',
+        modelScriptUrls: 'https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0'
+    },
+    toxicity: {
+        modelname: 'toxicity',
+        name: '욕설감지',
+        modelParams: 0.9,
+        modelDatas: 'toxicityModel',
+        modelScriptUrls: 'ttps://cdn.jsdelivr.net/npm/@tensorflow-models/toxicity'
+    }
+}
