@@ -89,7 +89,9 @@ Entry.events_.showMachineLearningScreen[1] = () => {$('.description__d9e8f').htm
                             }
                         });
                     } else {
-                        eval(modelScript[Models[el]])();
+                        $.get(modelScript[Models[el]]).then(GetRequestData => {
+                            eval(GetRequestData);
+                        });
                     }
                 } catch (e) {
                     Entry.toast.alert('EntAI 오류','알수없는 오류가 발생했습니다. (' + e.toString().replace(/\n/gi, ' ') + ')');
