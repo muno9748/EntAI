@@ -15,7 +15,7 @@
     },
     "knn": {
         "include": "mobilenet",
-        "modelname": "knn",
+        "modelname": "knnClassifier",
         "name": "이미지학습",
         "modelParams": 0.9,
         "modelDatas": "knnModel",
