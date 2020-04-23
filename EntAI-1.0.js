@@ -70,7 +70,7 @@ function loadComplete() {
                         return;
                     }
                 });
-                $(`#machineLearning_${id}`).remove();
+                //$(`#machineLearning_${id}`).remove();
             } else if (sprite.picture.filename){
                 const filename = sprite.picture.filename;
                 $(document.body).append(`<img src="/uploads/${filename.substr(0,2)}/${filename.substr(2,2)}/thumb/${filename}.png" id="machineLearning_${filename}" class="entryRemove" />`);
@@ -105,7 +105,7 @@ function loadComplete() {
                         return;
                     }
                 });
-                $(`#machineLearning_${filename}`).remove();
+                //$(`#machineLearning_${filename}`).remove();
             } else {
                 Entry.toast.alert('EntAI 오류','알수없는 오류가 발생했습니다.');
                 Entry.engine.toggleStop();
