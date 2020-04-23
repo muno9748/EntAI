@@ -59,29 +59,57 @@ Entry.events_.showMachineLearningScreen[1] = () => {$('.description__d9e8f').htm
                 Entry.dispatchEvent('showMachineLearningScreen');
                 try {
                     console.log(modelScriptUrls[Models[el]]);
-                    $.getScript(modelScriptUrls[Models[el]], () => {
-                        if(modelParams[Models[el]] != null) {
-                            window[Models[el]].load(modelParams[Models[el]]).then(model => {
-                                window[modelDatas[Models[el]]] = model;
-                                loadModel(Models[el]);
-                                window.EntAI_loadedPackageCount++;
-                                Entry.events_.showMachineLearningScreen[1]();
-                                if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
-                                    Entry.dispatchEvent('hideLoadingScreen')
+                    if(modelScriptUrls[Models[el]].length == 1) {
+                        $.getScript(modelScriptUrls[Models[el]][0], () => {
+                            if(modelParams[Models[el]] != null) {
+                                window[Models[el]].load(modelParams[Models[el]]).then(model => {
+                                    window[modelDatas[Models[el]]] = model;
+                                    loadModel(Models[el]);
+                                    window.EntAI_loadedPackageCount++;
+                                    Entry.events_.showMachineLearningScreen[1]();
+                                    if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
+                                        Entry.dispatchEvent('hideLoadingScreen')
+                                    }
+                                });
+                            } else {
+                                window[Models[el]].load().then(model => {
+                                    window[modelDatas[Models[el]]] = model;
+                                    loadModel(Models[el]);
+                                    window.EntAI_loadedPackageCount++;
+                                    Entry.events_.showMachineLearningScreen[1]();
+                                    if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
+                                        Entry.dispatchEvent('hideLoadingScreen')
+                                    }
+                                });
+                            }
+                        });
+                    } else if (modelScriptUrls[Models[el]].length == 2) {
+                        $.getScript(modelScriptUrls[Models[el]][0], () => {
+                            $.getScript(modelScriptUrls[Models[el]][1], () => {
+                                if(modelParams[Models[el]] != null) {
+                                    window[Models[el]].load(modelParams[Models[el]]).then(model => {
+                                        window[modelDatas[Models[el]]] = model;
+                                        loadModel(Models[el]);
+                                        window.EntAI_loadedPackageCount++;
+                                        Entry.events_.showMachineLearningScreen[1]();
+                                        if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
+                                            Entry.dispatchEvent('hideLoadingScreen')
+                                        }
+                                    });
+                                } else {
+                                    window[Models[el]].load().then(model => {
+                                        window[modelDatas[Models[el]]] = model;
+                                        loadModel(Models[el]);
+                                        window.EntAI_loadedPackageCount++;
+                                        Entry.events_.showMachineLearningScreen[1]();
+                                        if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
+                                            Entry.dispatchEvent('hideLoadingScreen')
+                                        }
+                                    });
                                 }
                             });
-                        } else {
-                            window[Models[el]].load().then(model => {
-                                window[modelDatas[Models[el]]] = model;
-                                loadModel(Models[el]);
-                                window.EntAI_loadedPackageCount++;
-                                Entry.events_.showMachineLearningScreen[1]();
-                                if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
-                                    Entry.dispatchEvent('hideLoadingScreen')
-                                }
-                            });
-                        }
-                    });
+                        });
+                    }
                 } catch (e) {
                     Entry.toast.alert('EntAI 오류','알수없는 오류가 발생했습니다. (' + e.toString().replace(/\n/gi, ' ') + ')');
                     Entry.engine.toggleStop();
