@@ -4,20 +4,21 @@
         "name": "이미지감지",
         "modelParams": null,
         "modelDatas": "mobileNetModel",
-        "modelScriptUrls": ["https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"]
+        "modelScriptUrls": "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"
     },
     "toxicity": {
         "modelname": "toxicity",
         "name": "욕설감지",
         "modelParams": 0.9,
         "modelDatas": "toxicityModel",
-        "modelScriptUrls": ["https://cdn.jsdelivr.net/npm/@tensorflow-models/toxicity"]
+        "modelScriptUrls": "https://cdn.jsdelivr.net/npm/@tensorflow-models/toxicity"
     },
     "knn": {
+        "include": 'mobilenet'
         "modelname": "knn",
         "name": "이미지학습",
         "modelParams": 0.9,
         "modelDatas": "knnModel",
-        "modelScriptUrls": ["https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"]
+        "modelScriptUrls": "https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"
     }
 }
