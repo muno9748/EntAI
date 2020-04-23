@@ -14,11 +14,11 @@
         "modelScriptUrls": "https://cdn.jsdelivr.net/npm/@tensorflow-models/toxicity"
     },
     "knn": {
-        "include": "mobilenet",
         "modelname": "knnClassifier",
         "name": "이미지학습",
-        "modelParams": 0.9,
-        "modelDatas": "knnModel",
-        "modelScriptUrls": "https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"
+        "modelParams": null,
+        "modelDatas": "",
+        "modelScriptUrls": "",
+        "script": "https://raw.githubusercontent.com/muno9748/EntAI/master/model/knnLoad.js"
     }
 }
