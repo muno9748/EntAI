@@ -67,7 +67,7 @@ Entry.events_.showMachineLearningScreen[1] = () => {$('.description__d9e8f').htm
                                 window.EntAI_loadedPackageCount++;
                                 Entry.events_.showMachineLearningScreen[1]();
                                 if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
-                                    Entry.dispatchEvent(hideLoadingScreen)
+                                    Entry.dispatchEvent('hideLoadingScreen')
                                 }
                             });
                         } else {
@@ -77,7 +77,7 @@ Entry.events_.showMachineLearningScreen[1] = () => {$('.description__d9e8f').htm
                                 window.EntAI_loadedPackageCount++;
                                 Entry.events_.showMachineLearningScreen[1]();
                                 if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
-                                    Entry.dispatchEvent(hideLoadingScreen)
+                                    Entry.dispatchEvent('hideLoadingScreen')
                                 }
                             });
                         }
