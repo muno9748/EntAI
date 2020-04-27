@@ -1,3 +1,137 @@
+/**
+ * EntAI 3.0 By muno9748
+ * Block Handler Code
+ * Copyright 2020. EntAI All Rights Reserved.
+**/
+
+$.getScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet", () => {
+    $.getScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier", () => {
+        mobilenet.load().then(model => {
+            window.knnMobilenet = model;
+            window.knn = knnClassifier;
+            initKNN();
+            window.EntAI_loadedPackageCount++;
+            Entry.events_.showMachineLearningScreen[1]();
+            if(window.EntAI_loadedPackageCount == window.EntAI_totalPackageCount) {
+                Entry.dispatchEvent('hideLoadingScreen')
+            }
+        });
+    });
+});
+function initKNN() {
+    if (Entry.variableContainer.getVariableByName('EntAI-학습'))
+        Entry.variableContainer.setVariables([{name:'EntAI-학습',value:'{}',visible:false}]);
+    window.detectImageBlockResult = null;
+    function checkFunction(template) {
+        var check = _.find(Entry.variableContainer.functions_,
+            d => d.block.template.replace(/ /gi,'') == template.replace(/ /gi,''));
+        return check ? check : false;
+    }
+    function modelData() {
+        return Entry.variableContainer.getVariableByName('EntAI-학습') ? false : Entry.variableContainer.getVariableByName('EntAI-학습').getValue();
+    }
+    function getBlock(template) {
+        var check = _.find(Entry.variableContainer.functions_,
+            d => d.block.template.replace(/ /gi,'') == template.replace(/ /gi,''));
+        if (!check) return false;
+        return check.id;
+    }
+    function throwError(title,content) {
+        Entry.toast.alert(title,content);
+        Entry.engine.toggleStop();
+        return false;
+    }
+    const Block = {
+        detectImage: '%1AI로%2의이미지감지하기%3',
+        getAIResult: 'AI결과의%1데이터가져오기%2',
+        getAIResultOther: 'AI의%1클래스의결과%2데이터가져오기%3'
+    };
+    if(!checkFunction(Block.detectImage)) return throwError('모델학습 오류','"(문자/숫자값) AI로 (문자/숫자값)의 이미지 감지하기" 함수가 필요합니다.');
+    Entry.block[`func_${getBlock(Block.detectImage)}`].paramsKeyMap = { PRESET: 0, OBJECT: 1 };
+    Entry.block[`func_${getBlock(Block.detectImage)}`].func = async (sprite,script) => {
+        script.Param = name => {return script.getValue(name,script).toString()};
+        const objectName = script.Param('OBJECT');
+        var findedObject = _.find(Entry.container.objects_, d => d.name == objectName);
+        var objectMatchCounts = 0;
+        Entry.container.objects_.forEach((d,i) => {
+            if(d.name == objectName) ++objectMatchCounts;
+        });
+        if(objectMatchCounts > 1 && objectName != '자신') {
+            Entry.toast.alert('EntAI 오류','같은 오브젝트가 2개 이상 있습니다.');
+            Entry.engine.toggleStop();
+            return;
+        }
+        if(findedObject == undefined && objectName != '자신') {
+            Entry.toast.alert('EntAI 오류','오브젝트를 찾을수 없습니다.');
+            Entry.engine.toggleStop();
+            return;
+        } else if (objectName == '자신') {
+            findedObject = sprite.parent;
+        }
+        if(typeof knnMobilenet == 'undefined' || typeof tf == 'undefined' || typeof knn == 'undefined') {
+            Entry.toast.alert('EntAI 오류','필요한 라이브러리를 찾을수 없습니다');
+            Entry.engine.toggleStop();
+            return;
+        }
+        const presetName = script.Param('PRESET');
+        if(Object.keys(modelData()).indexOf(presetName) == -1) return throwError('모델학습 오류',`"${presetName}" 이름에 해당하는 AI를 찾을수 없습니다.`);
+        var airesult;
+        try {
+            airesult = await knnHandleAI(presetName);
+        } catch (e) {
+            return throwError('모델학습 오류','뭔가가 잘못되었습니다. 디스코드 muno9748#2626로 dm 보내주세요');
+        }
+        window.detectImageBlockResult = airesult;
+        if(_.find(Entry.variableContainer.messages_, d => d.name.replace(/ /gi,'') == '모델학습완료')) Entry.engine.raiseMessage(_.find(Entry.variableContainer.messages_, d => d.name == '감지완료').id);
+        return;
+    };
+    if(!checkFunction(Block.getAIResult)) return throwError('모델학습 오류','"AI결과의 (문자/숫자값)의 테이터 가져오기" 함수가 필요합니다.');
+    Entry.block[`func_${getBlock(Block.getAIResult)}`].paramsKeyMap = { DATANAME: 0 };
+    Entry.block[`func_${getBlock(Block.getAIResult)}`].func = (sprite,script) => {
+        script.Param = name => {return script.getValue(name,script).toString()};
+        if(!Entry.variableContainer.getVariableByName('모델학습-결과')) return throwError('모델학습 오류','"모델학습-결과" 변수가 필요합니다.');
+        switch(script.Param('DATANAME').replace(/ /gi,'')) {
+            case '라벨':
+                if(!window.detectImageBlockResult) return throwError('모델학습 오류', '먼저 이미지를 감지해주세요');
+                Entry.variableContainer.getVariableByName('모델학습-결과').setValue(window.detectImageBlockResult.result.label);
+                return;
+            case '정확도':
+                if(!window.detectImageBlockResult) return throwError('모델학습 오류', '먼저 이미지를 감지해주세요');
+                Entry.variableContainer.getVariableByName('모델학습-결과').setValue(parseInt(window.detectImageBlockResult.result.confidences.result.toString()) * 100);
+                return;
+            default:
+                return throwError('모델학습 오류','"라벨" 또는 "정확도" 데이터만 가져올수 있습니다');
+        }
+    }
+    if(checkFunction(Block.getAIResultOther)) {
+        Entry.block[`func_${getBlock(Block.getAIResultOther)}`].paramsKeyMap = { CLASSNAME: 0, DATANAME: 1 };
+        Entry.block[`func_${getBlock(Block.getAIResultOther)}`].func = (sprite,script) => {
+            script.Param = name => {return script.getValue(name,script).toString()};
+            if(!window.detectImageBlockResult) return throwError('모델학습 오류', '먼저 이미지를 감지해주세요');
+            if(!Entry.variableContainer.getVariableByName('모델학습-결과')) return throwError('모델학습 오류','"모델학습-결과" 변수가 필요합니다.');
+            if(Object.keys(window.detectImageBlockResult.confidences).indexOf(script.Param('CLASSNAME')) == -1) return throwError('모델학습 오류','클래스를 찾을수 없습니다.');
+            switch(script.Param('DATANAME').replace(/ /gi,'')) {
+                case '라벨':
+                    if(!window.detectImageBlockResult) return throwError('모델학습 오류', '먼저 이미지를 감지해주세요');
+                    Entry.variableContainer.getVariableByName('모델학습-결과').setValue(script.Param('CLASSNAME'));
+                    return;
+                case '정확도':
+                    if(!window.detectImageBlockResult) return throwError('모델학습 오류', '먼저 이미지를 감지해주세요');
+                    Entry.variableContainer.getVariableByName('모델학습-결과').setValue(parseInt(window.detectImageBlockResult[script.Param('CLASSNAME')].result.toString()) * 100);
+                    return;
+                default:
+                    return throwError('모델학습 오류','"라벨" 또는 "정확도" 데이터만 가져올수 있습니다');
+            }
+        }
+    }
+}
+
+/**
+ * EntAI 3.0 By muno9748
+ * EntAI 3.0 UI Creator
+ * Copyright 2020. EntAI All Rights Reserved.
+**/
+
 $('.btn_workspace_ai_parent').remove();
 $($('header.common_gnb .group_box .group_inner')[0]).prepend('<div class="work_space btn_workspace_ai_parent"><a title="모델학습" class="btn_work_space btn_workspace_ai"></a></div>');
 $('.ai_popup_open_btn_stylesheet').remove();
