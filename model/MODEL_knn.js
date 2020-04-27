@@ -76,10 +76,18 @@ function initKNN() {
         const presetName = script.Param('PRESET');
         if(Object.keys(modelData()).indexOf(presetName) == -1) return throwError('모델학습 오류',`"${presetName}" 이름에 해당하는 AI를 찾을수 없습니다.`);
         var airesult;
-        try {
-            airesult = await knnHandleAI(presetName);
-        } catch (e) {
-            return throwError('모델학습 오류','뭔가가 잘못되었습니다. 디스코드 muno9748#2626로 dm 보내주세요');
+        if(sprite.picture.fileurl) {
+            try {
+                airesult = await knnHandleAI(presetName,sprite.picture.fileurl);
+            } catch (e) {
+                return throwError('모델학습 오류','뭔가가 잘못되었습니다. 디스코드 muno9748#2626로 dm 보내주세요');
+            }
+        } else {
+            try {
+                airesult = await knnHandleAI(presetName,`/uploads/${sprite.picture.filename.substr(0,2)}/${sprite.picture.filename.substr(2,2)}/thumb/${sprite.picture.filename}.png`);
+            } catch (e) {
+                return throwError('모델학습 오류','뭔가가 잘못되었습니다. 디스코드 muno9748#2626로 dm 보내주세요');
+            }
         }
         window.detectImageBlockResult = airesult;
         if(_.find(Entry.variableContainer.messages_, d => d.name.replace(/ /gi,'') == '모델학습완료')) Entry.engine.raiseMessage(_.find(Entry.variableContainer.messages_, d => d.name == '감지완료').id);
