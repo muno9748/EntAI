@@ -28,7 +28,7 @@ function initKNN() {
         return check ? check : false;
     }
     function modelData() {
-        return Entry.variableContainer.getVariableByName('EntAI-학습') ? false : Entry.variableContainer.getVariableByName('EntAI-학습').getValue();
+        return JSON.parse(Entry.variableContainer.getVariableByName('EntAI-학습') ? false : Entry.variableContainer.getVariableByName('EntAI-학습').getValue());
     }
     function getBlock(template) {
         var check = _.find(Entry.variableContainer.functions_,
