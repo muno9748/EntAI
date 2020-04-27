@@ -19,7 +19,7 @@ $.getScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet", () => {
     });
 });
 function initKNN() {
-    if (Entry.variableContainer.getVariableByName('EntAI-학습'))
+    if (!(Entry.variableContainer.getVariableByName('EntAI-학습')))
         Entry.variableContainer.setVariables([{name:'EntAI-학습',value:'{}',visible:false}]);
     window.detectImageBlockResult = null;
     function checkFunction(template) {
