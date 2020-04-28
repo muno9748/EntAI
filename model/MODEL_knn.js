@@ -28,6 +28,7 @@ function initKNN() {
         return check ? check : false;
     }
     function modelData() {
+        presetData = JSON.parse(!(Entry.variableContainer.getVariableByName('EntAI-학습')) ? {} : Entry.variableContainer.getVariableByName('EntAI-학습').getValue());
         return JSON.parse(!(Entry.variableContainer.getVariableByName('EntAI-학습')) ? false : Entry.variableContainer.getVariableByName('EntAI-학습').getValue());
     }
     function getBlock(template) {
@@ -46,6 +47,7 @@ function initKNN() {
         getAIResult: 'AI결과의%1데이터가져오기%2',
         getAIResultOther: 'AI의%1클래스의결과%2데이터가져오기%3'
     };
+    if(!Entry.variableContainer.getVariableByName('모델학습-결과')) return throwError('모델학습 오류','"모델학습-결과" 변수가 필요합니다.');
     if(!checkFunction(Block.detectImage)) return throwError('모델학습 오류','"(문자/숫자값) AI로 (문자/숫자값)의 이미지 감지하기" 함수가 필요합니다.');
     Entry.block[`func_${getBlock(Block.detectImage)}`].paramsKeyMap = { PRESET: 0, OBJECT: 1 };
     Entry.block[`func_${getBlock(Block.detectImage)}`].func = async (sprite,script) => {
@@ -76,16 +78,88 @@ function initKNN() {
         const presetName = script.Param('PRESET');
         if(Object.keys(modelData()).indexOf(presetName) == -1) return throwError('모델학습 오류',`"${presetName}" 이름에 해당하는 AI를 찾을수 없습니다.`);
         var airesult;
-        if(sprite.picture.fileurl) {
+        if(findedObject.entity.picture.fileurl) {
             try {
-                airesult = await knnHandleAI(presetName,sprite.picture.fileurl);
+                $(`.knnLoadedImages_Preset${modelData()[presetName].id}`).remove();
+                $(document.body).prepend(`<div class="knnLoadedImages_Preset${modelData()[presetName].id}"></div>`);
+                Object.keys(modelData()[presetName].datas).forEach(el => {
+                    $(`.knnLoadedImages_Preset${modelData()[presetName].id}`).append(`<div class="knnLoadedImages_Preset${modelData()[presetName].id}_Class${modelData()[presetName].classId[el]}"></div>`);
+                    modelData()[presetName].datas[el].images.forEach(_el => {
+                        $(`.knnLoadedImages_Preset${modelData()[presetName].id}_Class${modelData()[presetName].classId[el]}`).append(`
+                            <img class="entryRemove knnLoadedImage knnLoadedImages_Preset${modelData()[presetName].id}_Class${modelData()[presetName].classId[el]}_Image${_el.match(/\/[a-zA-Z0-9]+.png/gi)[0].slice(1)}" src="${_el}"></img>
+                        `);
+                    });
+                });
+                var canPass = true;
+                Object.keys(modelData()[presetName].datas).forEach(el => {
+                    if(modelData()[presetName].datas[el].images.length < 5) canPass = false; 
+                });
+                if(!canPass) return throwError('모델학습 오류','사진 샘플이 5개 이상 있어야 합니다.');
+                window.imageLoadedCount = 0;
+                window.allImageCount = 0;
+                Object.keys(modelData()[presetName].datas).forEach(el => {
+                    modelData()[presetName].datas[el].images.forEach(_el => {
+                        (window.allImageCount)++;
+                    });
+                });
+                await new Promise(r => {
+                    Object.keys(modelData()[presetName].datas).forEach(el => {
+                        modelData()[presetName].datas[el].images.forEach(_el => {
+                            var img = document.getElementsByClassName(`knnLoadedImages_Preset${modelData()[presetName].id}_Class${modelData()[presetName].classId[el]}_Image${_el.match(/\/[a-zA-Z0-9]+.png/gi)[0].slice(1)}`)[0];
+                            img.onload = () => {
+                                (window.imageLoadedCount)++;
+                                if(window.imageLoadedCount >= window.allImageCount) {
+                                    r();
+                                }
+                            };
+                        });
+                    });
+                });
+                airesult = await knnHandleAI(presetName,findedObject.entity.picture.fileurl);
             } catch (e) {
+                console.error(e);
                 return throwError('모델학습 오류','뭔가가 잘못되었습니다. 디스코드 muno9748#2626로 dm 보내주세요');
             }
         } else {
             try {
-                airesult = await knnHandleAI(presetName,`/uploads/${sprite.picture.filename.substr(0,2)}/${sprite.picture.filename.substr(2,2)}/thumb/${sprite.picture.filename}.png`);
+                $(`.knnLoadedImages_Preset${modelData()[presetName].id}`).remove();
+                $(document.body).prepend(`<div class="knnLoadedImages_Preset${modelData()[presetName].id}"></div>`);
+                Object.keys(modelData()[presetName].datas).forEach(el => {
+                    $(`.knnLoadedImages_Preset${modelData()[presetName].id}`).append(`<div class="knnLoadedImages_Preset${modelData()[presetName].id}_Class${modelData()[presetName].classId[el]}"></div>`);
+                    modelData()[presetName].datas[el].images.forEach(_el => {
+                        $(`.knnLoadedImages_Preset${modelData()[presetName].id}_Class${modelData()[presetName].classId[el]}`).append(`
+                            <img class="entryRemove knnLoadedImage knnLoadedImages_Preset${modelData()[presetName].id}_Class${modelData()[presetName].classId[el]}_Image${_el.match(/\/[a-zA-Z0-9]+.png/gi)[0].slice(1)}" src="${_el}"></img>
+                        `);
+                    });
+                });
+                var canPass = true;
+                Object.keys(modelData()[presetName].datas).forEach(el => {
+                    if(modelData()[presetName].datas[el].images.length < 5) canPass = false; 
+                });
+                if(!canPass) return throwError('모델학습 오류','사진 샘플이 5개 이상 있어야 합니다.');
+                window.imageLoadedCount = 0;
+                window.allImageCount = 0;
+                Object.keys(modelData()[presetName].datas).forEach(el => {
+                    modelData()[presetName].datas[el].images.forEach(_el => {
+                        (window.allImageCount)++;
+                    });
+                });
+                await new Promise(r => {
+                    Object.keys(modelData()[presetName].datas).forEach(el => {
+                        modelData()[presetName].datas[el].images.forEach(_el => {
+                            var img = document.getElementsByClassName(`knnLoadedImages_Preset${modelData()[presetName].id}_Class${modelData()[presetName].classId[el]}_Image${_el.match(/\/[a-zA-Z0-9]+.png/gi)[0].slice(1)}`)[0];
+                            img.onload = () => {
+                                (window.imageLoadedCount)++;
+                                if(window.imageLoadedCount >= window.allImageCount) {
+                                    r();
+                                }
+                            };
+                        });
+                    });
+                });
+                airesult = await knnHandleAI(presetName,`/uploads/${findedObject.entity.picture.filename.substr(0,2)}/${findedObject.entity.picture.filename.substr(2,2)}/thumb/${findedObject.entity.picture.filename}.png`);
             } catch (e) {
+                console.error(e);
                 return throwError('모델학습 오류','뭔가가 잘못되었습니다. 디스코드 muno9748#2626로 dm 보내주세요');
             }
         }
@@ -96,8 +170,10 @@ function initKNN() {
     if(!checkFunction(Block.getAIResult)) return throwError('모델학습 오류','"AI결과의 (문자/숫자값)의 테이터 가져오기" 함수가 필요합니다.');
     Entry.block[`func_${getBlock(Block.getAIResult)}`].paramsKeyMap = { DATANAME: 0 };
     Entry.block[`func_${getBlock(Block.getAIResult)}`].func = (sprite,script) => {
-        script.Param = name => {return script.getValue(name,script).toString()};
+        if(!window.detectImageBlockResult) return throwError('모델학습 오류', '먼저 이미지를 감지해주세요');
         if(!Entry.variableContainer.getVariableByName('모델학습-결과')) return throwError('모델학습 오류','"모델학습-결과" 변수가 필요합니다.');
+        if(!window.detectImageBlockResult || !Entry.variableContainer.getVariableByName('모델학습-결과')) return;
+        script.Param = name => {return script.getValue(name,script).toString()}
         switch(script.Param('DATANAME').replace(/ /gi,'')) {
             case '라벨':
                 if(!window.detectImageBlockResult) return throwError('모델학습 오류', '먼저 이미지를 감지해주세요');
